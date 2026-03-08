@@ -1,9 +1,16 @@
 import base64
+import io
 import json
 import logging
 from typing import Optional
 
 from openai import OpenAI
+from PIL import Image
+try:
+    from pillow_heif import register_heif_opener
+    register_heif_opener()
+except ImportError:
+    pass
 
 from .config import OPENAI_API_KEY
 
@@ -38,8 +45,20 @@ def analyze_image(image_bytes: bytes, mime_type: str = "image/jpeg") -> Optional
         raise ValueError("OPENAI_API_KEY is not configured")
 
     client = OpenAI(api_key=OPENAI_API_KEY)
-    b64 = base64.b64encode(image_bytes).decode()
     logger.info("Analyzing image: %d bytes, mime=%s", len(image_bytes), mime_type)
+
+    # Convert any image format (HEIC, WEBP, etc.) to JPEG for OpenAI compatibility
+    try:
+        img = Image.open(io.BytesIO(image_bytes))
+        buf = io.BytesIO()
+        img.convert("RGB").save(buf, format="JPEG", quality=85)
+        image_bytes = buf.getvalue()
+        mime_type = "image/jpeg"
+        logger.info("Converted image to JPEG: %d bytes", len(image_bytes))
+    except Exception:
+        logger.warning("Could not convert image, sending as-is")
+
+    b64 = base64.b64encode(image_bytes).decode()
 
     try:
         response = client.chat.completions.create(

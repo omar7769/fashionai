@@ -45,8 +45,9 @@ export default function AddItemScreen() {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       quality: 0.8,
+      exif: false,
     });
 
     if (!result.canceled && result.assets?.length) {
@@ -57,15 +58,22 @@ export default function AddItemScreen() {
     }
   };
 
+  const normalizeImage = (asset) => {
+    const uri = asset.uri;
+    const isHeic = (asset.mimeType || '').toLowerCase().includes('heic') ||
+                   (asset.fileName || '').toLowerCase().endsWith('.heic');
+    return {
+      uri,
+      name: isHeic ? 'item.jpg' : (asset.fileName || 'item.jpg'),
+      type: isHeic ? 'image/jpeg' : (asset.mimeType || 'image/jpeg'),
+    };
+  };
+
   const analyzeWithAI = async (asset) => {
     setAnalyzing(true);
     try {
       const formData = new FormData();
-      formData.append('image', {
-        uri: asset.uri,
-        name: asset.fileName || 'item.jpg',
-        type: asset.mimeType || 'image/jpeg',
-      });
+      formData.append('image', normalizeImage(asset));
 
       const response = await api.post('/analyze-image', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -114,11 +122,7 @@ export default function AddItemScreen() {
       formData.append('color', color.trim());
       formData.append('season', season);
       formData.append('formality', formality);
-      formData.append('image', {
-        uri: image.uri,
-        name: image.fileName || 'item.jpg',
-        type: image.mimeType || 'image/jpeg',
-      });
+      formData.append('image', normalizeImage(image));
 
       await api.post('/items', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
