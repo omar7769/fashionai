@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "FashionAI",
+    "slug": "fashionai-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.fashionai.mobile",
+      "infoPlist": {
+        "NSCameraUsageDescription": "FashionAI needs camera access to photograph clothing items",
+        "NSPhotoLibraryUsageDescription": "FashionAI needs photo library access to select clothing images"
+      }
+    },
+    "android": {
+      "package": "com.fashionai.mobile"
+    },
+    "web": {}
+  }
+}

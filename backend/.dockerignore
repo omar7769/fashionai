@@ -1,0 +1,6 @@
+.env
+.venv/
+uploads/
+wardrobe.db
+__pycache__/
+*.pyc
