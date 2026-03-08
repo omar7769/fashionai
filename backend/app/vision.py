@@ -34,10 +34,12 @@ VALID_FORMALITIES = {"casual", "smart-casual", "business", "formal"}
 def analyze_image(image_bytes: bytes, mime_type: str = "image/jpeg") -> Optional[dict]:
     """Send image to OpenAI Vision and return validated clothing attributes."""
     if not OPENAI_API_KEY:
-        return None
+        logger.error("OPENAI_API_KEY is not set")
+        raise ValueError("OPENAI_API_KEY is not configured")
 
     client = OpenAI(api_key=OPENAI_API_KEY)
     b64 = base64.b64encode(image_bytes).decode()
+    logger.info("Analyzing image: %d bytes, mime=%s", len(image_bytes), mime_type)
 
     try:
         response = client.chat.completions.create(
@@ -56,9 +58,9 @@ def analyze_image(image_bytes: bytes, mime_type: str = "image/jpeg") -> Optional
             ],
             max_tokens=200,
         )
-    except Exception:
+    except Exception as exc:
         logger.exception("OpenAI API call failed")
-        return None
+        raise RuntimeError(f"OpenAI API error: {exc}") from exc
 
     text = response.choices[0].message.content.strip()
 

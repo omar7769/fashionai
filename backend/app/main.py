@@ -30,18 +30,29 @@ app.add_middleware(
 
 @app.get("/health")
 def health_check():
-    return {"status": "ok"}
+    from .config import OPENAI_API_KEY, SUPABASE_URL
+    return {
+        "status": "ok",
+        "openai_key_set": bool(OPENAI_API_KEY),
+        "supabase_url_set": bool(SUPABASE_URL),
+    }
 
 
 @app.post("/analyze-image", response_model=schemas.AnalyzeImageResponse)
 async def analyze_image(image: UploadFile = File(...)):
     image_bytes = await image.read()
     mime = image.content_type or "image/jpeg"
-    result = vision.analyze_image(image_bytes, mime)
+    logger.info("analyze-image: received %d bytes, content_type=%s, filename=%s", len(image_bytes), mime, image.filename)
+    try:
+        result = vision.analyze_image(image_bytes, mime)
+    except ValueError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc))
     if result is None:
         raise HTTPException(
             status_code=422,
-            detail="Could not analyze image. Check that OPENAI_API_KEY is set.",
+            detail="Could not parse AI response. Try a clearer clothing image.",
         )
     return result
 
