@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Alert,
   Button,
@@ -13,7 +13,8 @@ import {
 } from 'react-native';
 
 import SelectField from '../components/SelectField';
-import { api, DEMO_USER_ID } from '../api/client';
+import { api } from '../api/client';
+import { getUserId } from '../api/userId';
 
 const OCCASIONS = ['casual', 'work', 'date-night', 'formal'];
 
@@ -83,6 +84,7 @@ function OutfitCard({ outfit, index, onSave }) {
 }
 
 export default function OutfitGeneratorScreen() {
+  const [userId, setUserId] = useState(null);
   const [occasion, setOccasion] = useState('casual');
   const [suggestions, setSuggestions] = useState(null);
   const [weatherData, setWeatherData] = useState(null);
@@ -90,10 +92,14 @@ export default function OutfitGeneratorScreen() {
   const [useWeather, setUseWeather] = useState(false);
   const [city, setCity] = useState('');
 
+  useEffect(() => {
+    getUserId().then(setUserId);
+  }, []);
+
   const saveOutfit = async (outfit) => {
     try {
       await api.post('/saved-outfits', {
-        user_id: DEMO_USER_ID,
+        user_id: userId,
         outfit,
       });
       Alert.alert('Saved', 'Outfit saved to your collection.');
@@ -112,7 +118,7 @@ export default function OutfitGeneratorScreen() {
     setWeatherData(null);
     try {
       const formData = new FormData();
-      formData.append('user_id', DEMO_USER_ID);
+      formData.append('user_id', userId);
       formData.append('occasion', occasion);
       if (useWeather && city.trim()) {
         formData.append('city', city.trim());

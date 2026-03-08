@@ -1,24 +1,32 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 
 import ItemCard from '../components/ItemCard';
 import EditItemModal from '../components/EditItemModal';
-import { api, DEMO_USER_ID } from '../api/client';
+import { api } from '../api/client';
+import { getUserId } from '../api/userId';
 
 export default function ClosetScreen() {
+  const [userId, setUserId] = useState(null);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
 
-  const fetchItems = useCallback(async () => {
-    const response = await api.get('/items', { params: { user_id: DEMO_USER_ID } });
-    setItems(response.data);
+  useEffect(() => {
+    getUserId().then(setUserId);
   }, []);
+
+  const fetchItems = useCallback(async () => {
+    if (!userId) return;
+    const response = await api.get('/items', { params: { user_id: userId } });
+    setItems(response.data);
+  }, [userId]);
 
   useFocusEffect(
     useCallback(() => {
+      if (!userId) return;
       let mounted = true;
       (async () => {
         try {
@@ -30,7 +38,7 @@ export default function ClosetScreen() {
         }
       })();
       return () => { mounted = false; };
-    }, [fetchItems])
+    }, [fetchItems, userId])
   );
 
   const onRefresh = useCallback(async () => {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -14,13 +14,15 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 
 import SelectField from '../components/SelectField';
-import { api, DEMO_USER_ID } from '../api/client';
+import { api } from '../api/client';
+import { getUserId } from '../api/userId';
 
 const CATEGORIES = ['top', 'bottom', 'outerwear', 'shoes', 'accessory'];
 const SEASONS = ['spring', 'summer', 'fall', 'winter', 'all-season'];
 const FORMALITIES = ['casual', 'smart-casual', 'business', 'formal'];
 
 export default function AddItemScreen() {
+  const [userId, setUserId] = useState(null);
   const [image, setImage] = useState(null);
   const [category, setCategory] = useState('top');
   const [color, setColor] = useState('');
@@ -30,6 +32,10 @@ export default function AddItemScreen() {
   const [colorError, setColorError] = useState('');
   const [saving, setSaving] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
+
+  useEffect(() => {
+    getUserId().then(setUserId);
+  }, []);
 
   const pickImage = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -98,12 +104,12 @@ export default function AddItemScreen() {
       setColorError('');
     }
 
-    if (!valid) return;
+    if (!valid || !userId) return;
 
     setSaving(true);
     try {
       const formData = new FormData();
-      formData.append('user_id', DEMO_USER_ID);
+      formData.append('user_id', userId);
       formData.append('category', category);
       formData.append('color', color.trim());
       formData.append('season', season);

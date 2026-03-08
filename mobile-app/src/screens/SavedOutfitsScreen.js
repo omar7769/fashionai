@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -13,7 +13,8 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 
-import { api, DEMO_USER_ID } from '../api/client';
+import { api } from '../api/client';
+import { getUserId } from '../api/userId';
 
 function SlotImage({ item, label }) {
   if (!item) return null;
@@ -75,17 +76,24 @@ function SavedOutfitCard({ saved, onDelete }) {
 }
 
 export default function SavedOutfitsScreen() {
+  const [userId, setUserId] = useState(null);
   const [outfits, setOutfits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const fetchOutfits = useCallback(async () => {
-    const response = await api.get('/saved-outfits', { params: { user_id: DEMO_USER_ID } });
-    setOutfits(response.data);
+  useEffect(() => {
+    getUserId().then(setUserId);
   }, []);
+
+  const fetchOutfits = useCallback(async () => {
+    if (!userId) return;
+    const response = await api.get('/saved-outfits', { params: { user_id: userId } });
+    setOutfits(response.data);
+  }, [userId]);
 
   useFocusEffect(
     useCallback(() => {
+      if (!userId) return;
       let mounted = true;
       (async () => {
         try {
@@ -97,7 +105,7 @@ export default function SavedOutfitsScreen() {
         }
       })();
       return () => { mounted = false; };
-    }, [fetchOutfits])
+    }, [fetchOutfits, userId])
   );
 
   const onRefresh = useCallback(async () => {

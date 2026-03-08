@@ -13,12 +13,18 @@
       "bundleIdentifier": "com.fashionai.mobile",
       "infoPlist": {
         "NSCameraUsageDescription": "FashionAI needs camera access to photograph clothing items",
-        "NSPhotoLibraryUsageDescription": "FashionAI needs photo library access to select clothing images"
+        "NSPhotoLibraryUsageDescription": "FashionAI needs photo library access to select clothing images",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
       "package": "com.fashionai.mobile"
     },
-    "web": {}
+    "web": {},
+    "extra": {
+      "eas": {
+        "projectId": "13bc6c34-df6f-434c-997a-f54b2b02a666"
+      }
+    }
   }
 }

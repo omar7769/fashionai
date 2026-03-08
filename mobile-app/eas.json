@@ -10,12 +10,12 @@
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://RAILWAY_URL_HERE"
+        "EXPO_PUBLIC_API_URL": "https://fashionai-backend-production.up.railway.app"
       }
     },
     "production": {
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://RAILWAY_URL_HERE"
+        "EXPO_PUBLIC_API_URL": "https://fashionai-backend-production.up.railway.app"
       }
     }
   }
